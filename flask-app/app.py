@@ -1,9 +1,12 @@
 from flask import Flask, request, jsonify
+from flask_cors import CORS
 import torch
 from transformers import BertTokenizer, BertForSequenceClassification
 import re
 
 app = Flask(__name__)
+
+CORS(app)
 
 device = "cuda" if torch.cuda.is_available() else "cpu"
 tokenizer = BertTokenizer.from_pretrained("bert-base-uncased")
@@ -30,7 +33,7 @@ def detect_sql_injection():
             input_ids = temp.input_ids.to(device)
             attention_mask = temp.attention_mask.to(device)
             output = model(input_ids=input_ids, attention_mask=attention_mask)
-        
+
         logits = output.logits
         probabilities = torch.nn.functional.softmax(logits, dim=1)
         class_index = torch.argmax(probabilities, dim=1).item()
